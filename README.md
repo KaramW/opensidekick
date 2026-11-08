@@ -1,5 +1,12 @@
 # OpenSidekick
 
+> **🔀 Customized fork** of [esterhuizen/opensidekick](https://github.com/esterhuizen/opensidekick) by [@KaramW](https://github.com/KaramW). Original work © OpenSidekick contributors, [MIT](LICENSE).
+> The Chrome Web Store links install the original. To use this fork, see [From source](#from-source-unpacked).
+
+## What's different in this fork
+
+- **RTL support** — Arabic and other right-to-left text displays correctly, with direction detected per paragraph. Code stays left-to-right.
+
 ### Your browser agent shouldn't be locked to one AI company.
 
 **OpenSidekick is an open-source AI agent that lives in Chrome's side panel, reads
