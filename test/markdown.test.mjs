@@ -15,30 +15,36 @@ const ok = (cond, label) => {
 const count = (html, re) => (html.match(re) || []).length;
 
 // ---- headings ----
-eq(markdownToHtml("# A"), "<h1>A</h1>", "ATX heading renders as h1");
-eq(markdownToHtml("###### F"), "<h6>F</h6>", "level 6 heading renders as h6");
+eq(markdownToHtml("# A"), '<h1 dir="auto">A</h1>', "ATX heading renders as h1");
+eq(markdownToHtml("###### F"), '<h6 dir="auto">F</h6>', "level 6 heading renders as h6");
 ok(!markdownToHtml("# A").includes("#"), "the heading marker does not print");
 
 // ---- paragraphs and breaks ----
-eq(markdownToHtml("a\nb"), "<p>a<br>\nb</p>", "a single newline renders as a line break");
+eq(markdownToHtml("a\nb"), '<p dir="auto">a<br>\nb</p>', "a single newline renders as a line break");
 ok(markdownToHtml("a  \nb").includes("<br>"), "two trailing spaces make a hard break");
 
 // ---- lists ----
-ok(markdownToHtml("- one\n- two").includes("<ul>") && count(markdownToHtml("- one\n- two"), /<li>/g) === 2,
+ok(markdownToHtml("- one\n- two").includes("<ul>") && count(markdownToHtml("- one\n- two"), /<li\b/g) === 2,
   "bullet list renders two items");
 ok(markdownToHtml("1. a\n2. b").includes("<ol>"), "ordered list renders as ol");
 ok(markdownToHtml("3. a\n4. b").includes('<ol start="3">'), "an ordered list keeps its start number");
 const nested = markdownToHtml("- one\n  - nested");
-ok(nested.includes("<ul>") && count(nested, /<li>/g) === 2 && nested.includes("<li>one\n<ul>"), "nested list renders inside its parent item");
+ok(nested.includes("<ul>") && count(nested, /<li\b/g) === 2 && nested.includes('<li dir="auto">one\n<ul>'), "nested list renders inside its parent item");
 ok(markdownToHtml("- [ ] todo\n- [x] done").includes('type="checkbox"'), "task list renders checkboxes");
 ok(markdownToHtml("- [x] done").includes("checked"), "a completed task is checked");
 ok(markdownToHtml("- [ ] todo").includes('type="checkbox"') && !markdownToHtml("- [ ] todo").includes("<p>"),
   "a tight task item gets a checkbox with no unclosed paragraph");
-ok(markdownToHtml("- [ ] a\n\n- [ ] b").includes("<p>"), "a loose task list keeps its paragraphs");
+ok(markdownToHtml("- [ ] a\n\n- [ ] b").includes('<p dir="auto">'), "a loose task list keeps its paragraphs");
 
 // ---- blockquote, rule ----
-ok(markdownToHtml("> quoted").includes("<blockquote>") && markdownToHtml("> quoted").includes("quoted"), "blockquote renders");
+ok(markdownToHtml("> quoted").includes('<blockquote dir="auto">') && markdownToHtml("> quoted").includes("quoted"), "blockquote renders");
 ok(markdownToHtml("---").includes("<hr>"), "thematic break renders as hr");
+
+// ---- direction ----
+const mixed = markdownToHtml("مرحبا\n\nHello");
+ok(count(mixed, /dir="auto"/g) === 2, "each block picks its own direction");
+ok(markdownToHtml("- one").includes('<li dir="auto">'), "list items carry dir=auto");
+ok(!markdownToHtml("`x`").includes("<code dir="), "inline code stays out of the block direction pass");
 ok(!markdownToHtml("- - -").includes("<ul>"), "- - - is a rule, not a list");
 
 // ---- code ----
@@ -84,7 +90,7 @@ ok(!markdownToHtml("See www.example.com now").includes("<a"), "a bare domain is 
 ok(!markdownToHtml("edit setup.py and README.md, main.rs").includes("<a"), "filenames are not invented into domains");
 ok(markdownToHtml("Mail user@example.com").includes('<a href="mailto:user@example.com"'), "a bare email is a mailto link — fuzzyEmail is on");
 eq(markdownToHtml("Front: https://example.org/files/my_report_v2.png"),
-  '<p>Front: <a href="https://example.org/files/my_report_v2.png" target="_blank" rel="noopener noreferrer">https://example.org/files/my_report_v2.png</a></p>',
+  '<p dir="auto">Front: <a href="https://example.org/files/my_report_v2.png" target="_blank" rel="noopener noreferrer">https://example.org/files/my_report_v2.png</a></p>',
   "a bare URL keeps its underscores — a filename is not cut at the first one");
 ok(markdownToHtml("[x][ref]\n\n[ref]: https://a.b/c").includes("<a"), "a reference link resolves");
 for (const src of ["[x]()", "[x]( )", "[x](\n)", "[x](<>)"]) {
@@ -126,7 +132,7 @@ ok(quoteHref.includes("%22"), "the quote is percent-encoded in the href");
 
 // ---- tables ----
 const table = markdownToHtml("| a | b |\n| --- | ---: |\n| 1 | 2 |");
-ok(table.includes("<th>a</th>") && table.includes('<th style="text-align:right">b</th>'), "table header renders with alignment");
+ok(table.includes('<th dir="auto">a</th>') && table.includes('<th style="text-align:right" dir="auto">b</th>'), "table header renders with alignment");
 ok(count(table, /<tr>/g) === 2, "table renders its header row and its body row");
 ok(table.includes('class="md-table"'), "a table gets its own scroll frame");
 
@@ -140,7 +146,7 @@ eq(safeHref("Aimailto:x"), null, "safeHref rejects a string that only contains m
 
 // ---- input shapes ----
 eq(markdownToHtml(""), "", "empty input renders nothing");
-eq(markdownToHtml("a\r\nb\r\n"), "<p>a<br>\nb</p>", "CRLF input is handled");
+eq(markdownToHtml("a\r\nb\r\n"), '<p dir="auto">a<br>\nb</p>', "CRLF input is handled");
 
 // ---- streaming: the DOM after a chunked stream equals the one-shot render ----
 const sample = [

@@ -67,6 +67,25 @@ md.core.ruler.push("drop_refused_links", (state) => {
   }
 });
 
+// Every block gets dir="auto", so each paragraph, heading, list item, quote and
+// table cell finds its own direction from its first strong character. A mixed
+// Arabic/English reply then reads correctly block by block, and the UI chrome
+// around the transcript stays LTR.
+const BIDI_BLOCKS = new Set([
+  "paragraph_open",
+  "heading_open",
+  "list_item_open",
+  "blockquote_open",
+  "td_open",
+  "th_open",
+]);
+
+md.core.ruler.push("block_direction", (state) => {
+  for (const token of state.tokens) {
+    if (BIDI_BLOCKS.has(token.type)) token.attrSet("dir", "auto");
+  }
+});
+
 // A code fence gets a banner naming its language, so the language is not the
 // code's first line, and a Copy control. The copy handler lives in the side panel.
 md.renderer.rules.fence = (tokens, idx) => {
@@ -123,7 +142,7 @@ md.renderer.rules.paragraph_open = (tokens, idx, options, env, self) => {
       const box = `<input type="checkbox" disabled${m[1] === " " ? "" : " checked"} /> `;
       // A tight list item has no paragraph of its own (the token is hidden), so
       // there is no closing </p> for an opening <p> to match.
-      return tokens[idx].hidden ? box : `<p>${box}`;
+      return tokens[idx].hidden ? box : `<p dir="auto">${box}`;
     }
   }
   return self.renderToken(tokens, idx, options);

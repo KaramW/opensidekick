@@ -268,6 +268,7 @@ function renderHistory(history) {
     else {
       const el = document.createElement("div");
       el.className = "msg assistant";
+      el.dir = "auto";
       el.innerHTML = markdownToHtml(m.text);
       els.messages.appendChild(el);
     }
@@ -660,6 +661,9 @@ function addUserMessage(text) {
   sealLog();
   const el = document.createElement("div");
   el.className = "msg user";
+  // Each message picks its own direction from its first strong character, so an
+  // Arabic turn reads right-to-left without touching the LTR UI chrome.
+  el.dir = "auto";
   el.textContent = text;
   els.messages.appendChild(el);
   scroll();
@@ -669,6 +673,7 @@ function startAssistant() {
   sealLog();
   const el = document.createElement("div");
   el.className = "msg assistant";
+  el.dir = "auto";
   el.innerHTML = '<span class="thinking"><span class="dot-pulse"></span>Thinking…</span>';
   els.messages.appendChild(el);
   current = { el, started: false, md: createStreamingRenderer(), timer: 0, tick: 16, lastHtml: "", copy: null };
@@ -847,6 +852,7 @@ function addFinish(summary) {
   sealLog();
   const el = document.createElement("div");
   el.className = "msg assistant";
+  el.dir = "auto";
   el.innerHTML = markdownToHtml(summary);
   els.messages.appendChild(el);
   scroll();

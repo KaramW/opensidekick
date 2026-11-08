@@ -577,6 +577,9 @@ body {
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: anywhere;
+  /* Resolves against each block's own direction (dir="auto"), so Arabic prose
+     aligns right and English prose stays left within the same reply. */
+  text-align: start;
 }
 .msg.user {
   align-self: flex-end;
@@ -640,7 +643,8 @@ body {
 .msg.assistant ul,
 .msg.assistant ol {
   margin: 0 0 8px;
-  padding-left: 20px;
+  /* Indent on the start side, so bullets move right under an RTL paragraph. */
+  padding-inline-start: 20px;
 }
 .msg.assistant li + li {
   margin-top: 4px;
@@ -654,14 +658,15 @@ body {
 }
 .msg.assistant li input[type="checkbox"] {
   accent-color: var(--os-muted);
-  margin: 0 6px 0 0;
+  margin: 0;
+  margin-inline-end: 6px;
   vertical-align: -1px;
 }
 .msg.assistant blockquote {
-  border-left: 2px solid var(--os-line-2);
+  border-inline-start: 2px solid var(--os-line-2);
   color: var(--os-ink-soft);
   margin: 0 0 8px;
-  padding-left: 12px;
+  padding-inline-start: 12px;
 }
 .msg.assistant hr {
   border: 0;
@@ -687,6 +692,14 @@ body {
      other link in the UI. Focus is the panel's standard :focus-visible outline. */
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+/* Code is direction-free content: keep it LTR and isolated from the paragraph's
+   direction, or an Arabic reply would reverse the code's punctuation and order. */
+.msg pre,
+.msg code {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
 }
 .msg.assistant code {
   font-family: var(--os-mono);
